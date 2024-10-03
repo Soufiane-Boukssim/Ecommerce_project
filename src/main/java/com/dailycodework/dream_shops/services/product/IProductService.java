@@ -1,5 +1,6 @@
 package com.dailycodework.dream_shops.services.product;
 
+import com.dailycodework.dream_shops.dto.ProductDto;
 import com.dailycodework.dream_shops.models.Product;
 import com.dailycodework.dream_shops.requests.AddProductRequest;
 import com.dailycodework.dream_shops.requests.UpdateProductRequest;
@@ -12,9 +13,9 @@ public interface IProductService {
 
    Product getProductById(Long id);
 
-   List<Product> getProductByName(String name);
+   Product getProductByName(String name);
 
-   List<Product> getProductByBrand(String brand);
+   List<Product> getProductsByBrand(String brand);
 
    List<Product> getProductByCategory(String Category);
 
@@ -31,4 +32,7 @@ public interface IProductService {
 
    Long countProductsByBrand(String brand);
 
+   ProductDto convertToDto(Product product);
+
+   List<ProductDto> getConvertedProducts(List<Product> products);
 }

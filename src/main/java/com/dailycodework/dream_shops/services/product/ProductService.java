@@ -1,13 +1,18 @@
 package com.dailycodework.dream_shops.services.product;
 
+import com.dailycodework.dream_shops.dto.ImageDto;
+import com.dailycodework.dream_shops.dto.ProductDto;
 import com.dailycodework.dream_shops.exceptions.ProductNotFoundException;
 import com.dailycodework.dream_shops.models.Category;
+import com.dailycodework.dream_shops.models.Image;
 import com.dailycodework.dream_shops.models.Product;
 import com.dailycodework.dream_shops.repositories.CategoryRepository;
+import com.dailycodework.dream_shops.repositories.ImageRepository;
 import com.dailycodework.dream_shops.repositories.ProductRepository;
 import com.dailycodework.dream_shops.requests.AddProductRequest;
 import com.dailycodework.dream_shops.requests.UpdateProductRequest;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +23,9 @@ import java.util.Optional;
 public class ProductService implements IProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    //le role de ModelMapper est de convertie un objet de type x en un objet de type xDto
+    private final ModelMapper modelMapper;
+    private final ImageRepository imageRepository;
 
 
     @Override
@@ -56,32 +64,51 @@ public class ProductService implements IProductService {
     @Override
     public Product getProductById(Long id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found!"));
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id));
     }
 
     @Override
-    public List<Product> getProductByName(String name) {
-        return productRepository.findProductByName(name);
+    public Product getProductByName(String name) {
+        Product product= productRepository.findProductByName(name);
+        if(product==null)
+            throw new ProductNotFoundException("Product not found with the name: "+name);
+        return product;
     }
 
     @Override
-    public List<Product> getProductByBrand(String brand) {
-        return productRepository.findProductByBrand(brand);
+    public List<Product> getProductsByBrand(String brand) {
+        List<Product> products=  productRepository.findProductByBrand(brand);
+        if(products.isEmpty()){
+            throw new ProductNotFoundException("Product not found with the brand: "+brand);
+        }
+        return products;
     }
 
     @Override
     public List<Product> getProductByCategory(String category) {
-        return productRepository.findProductByCategoryName(category);
+        List<Product> products= productRepository.findProductByCategoryName(category);
+        if(products.isEmpty()){
+            throw new ProductNotFoundException("Product not found with the category: "+category);
+        }
+        return products;
     }
 
     @Override
     public List<Product> getProductByBrandAndName(String Brand, String Name) {
-        return productRepository.findProductByBrandAndName(Brand, Name);
+        List<Product> products= productRepository.findProductByBrandAndName(Brand, Name);
+        if(products.isEmpty()){
+            throw new ProductNotFoundException("Product not found with the name: "+Name +" and Brand: "+Brand);
+        }
+        return products;
     }
 
     @Override
     public List<Product> getProductsByCategoryAndBrand(String category, String brand) {
-        return productRepository.findProductByCategoryNameAndBrand(category, brand);
+        List<Product> products= productRepository.findProductByCategoryNameAndBrand(category, brand);
+        if(products.isEmpty()){
+            throw new ProductNotFoundException("Product not found with the category: "+category+" and Brand: "+brand);
+        }
+        return products;
     }
 
 
@@ -123,7 +150,25 @@ public class ProductService implements IProductService {
 
     }
 
+    @Override
+    public ProductDto convertToDto(Product product) {
+        //Mappage entre objet product et objet productDTO
+        //on utilise ModelMapper pour convertir l'objet product de type Product en un nouvel objet productDto de type ProductDto
+        //Syntaxe Générale de ModelMapper
+        //T targetObject = modelMapper.map(sourceObject, TargetClass.class);
+        //Correspondance directe : Pour que le mappage automatique fonctionne correctement, il est conseillé que les noms des attributs dans les deux classes soient identiques
+        ProductDto productDto= modelMapper.map(product, ProductDto.class);
+        List<Image> images= imageRepository.findByProductId(product.getId());
+        //stream().map(...) est très utile pour transformer les éléments d'une collection en appliquant une fonction de transformation
+        List<ImageDto> imageDtos= images.stream().map(image -> modelMapper.map(image,ImageDto.class)).toList();
+        productDto.setImages(imageDtos);
+        return productDto;
+    }
 
+    @Override
+    public List<ProductDto> getConvertedProducts(List<Product> products){
+        return products.stream().map(this::convertToDto).toList();
+    }
 
 
 }
