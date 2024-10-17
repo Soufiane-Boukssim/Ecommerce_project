@@ -28,8 +28,11 @@ public class Cart {
     //Avec orphanRemoval = true : Lorsque vous retirez item1 du Cart, il sera également supprimé de CartItem
     @OneToMany(mappedBy = "cart",cascade = CascadeType.ALL,orphanRemoval = true)
     //=new HashSet<>() pour que @PostMapping("/item/add") addItemToCard() marche
-
     private Set<CartItem> Items= new HashSet<>();
+
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     public void addItem(CartItem item) {
         this.Items.add(item);

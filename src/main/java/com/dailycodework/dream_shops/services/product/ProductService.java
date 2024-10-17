@@ -2,6 +2,7 @@ package com.dailycodework.dream_shops.services.product;
 
 import com.dailycodework.dream_shops.dto.ImageDto;
 import com.dailycodework.dream_shops.dto.ProductDto;
+import com.dailycodework.dream_shops.exceptions.AlreadyExistsException;
 import com.dailycodework.dream_shops.exceptions.ProductNotFoundException;
 import com.dailycodework.dream_shops.models.Category;
 import com.dailycodework.dream_shops.models.Image;
@@ -35,6 +36,11 @@ public class ProductService implements IProductService {
 
     @Override
     public Product addProduct(AddProductRequest request) {
+
+        if (productExists(request.getName(), request.getBrand())){
+            throw new AlreadyExistsException("Product "+request.getBrand()+" "+request.getName()+" already exists");
+        }
+
         //1. Recherche ou création de la catégorie
         Category category= Optional.ofNullable(categoryRepository.findByName(request.getCategory().getName()))
                 .orElseGet(()-> {
@@ -46,6 +52,10 @@ public class ProductService implements IProductService {
         request.setCategory(category);
         //4. Méthode de Sauvegarde du Produit
         return productRepository.save(createProduct(request));
+    }
+
+    private boolean productExists(String name,String brand){
+        return productRepository.existsByNameAndBrand(name,brand);
     }
 
     //3. Méthode de Création de Produit (et qui va etre afficher dans postman)

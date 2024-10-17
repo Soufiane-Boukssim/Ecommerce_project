@@ -1,6 +1,7 @@
 package com.dailycodework.dream_shops.services.cart;
 
 import com.dailycodework.dream_shops.models.Cart;
+import com.dailycodework.dream_shops.models.User;
 
 import java.math.BigDecimal;
 
@@ -9,5 +10,11 @@ public interface ICartService {
     void clearCart(Long id);
     BigDecimal getTotalPrice(Long id);
 
-    Long initializeNewCart();
+
+    Cart initializeNewCart(User user);
+
+    //new
+    Cart getCartByUserId(Long userId);
+
+    void resetCartTotalAmount(Long id);
 }
