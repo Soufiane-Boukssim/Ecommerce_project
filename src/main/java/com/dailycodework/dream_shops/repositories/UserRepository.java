@@ -7,4 +7,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByEmail(String email);
 
+    //for spring security (ShopUserDetailsService)
+    User findByEmail(String email);
+
 }
